@@ -18,7 +18,6 @@ import { loadAdaptation, intensityColors, type AdaptationState } from "@/lib/ada
 import { goalLabels, levelLabels } from "@/lib/plan-generator";
 import {
   loadPremium,
-  activatePremiumMock,
   PREMIUM_BENEFITS,
   type PremiumState,
 } from "@/lib/premium";
@@ -173,12 +172,6 @@ export default function ProfilePage() {
     const granted = result === "granted";
     setNotifEnabled(granted);
     storageSet(KEYS.NOTIFICATIONS, granted);
-  }
-
-  function handleActivatePremium() {
-    const updated = activatePremiumMock();
-    setPremium(updated);
-    // Keep card open so user sees the "Premium Ativo" state
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -534,7 +527,6 @@ export default function ProfilePage() {
       {showPremiumCard && (
         <PremiumCard
           state={premium}
-          onActivate={handleActivatePremium}
           onClose={() => setShowPremiumCard(false)}
         />
       )}

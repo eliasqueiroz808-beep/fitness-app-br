@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 
-// ─── Credentials stay server-side only ────────────────────────────────────
-const SHOPIFY_DOMAIN           = "emporiodosnaturais-iyb.myshopify.com";
-const SHOPIFY_STOREFRONT_TOKEN = "f162b333e29057829268fca3292f5766";
-const SHOPIFY_ENDPOINT         = `https://${SHOPIFY_DOMAIN}/api/2024-01/graphql.json`;
+const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
+const SHOPIFY_STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN;
+const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || "2025-10";
+
+if (!SHOPIFY_DOMAIN) {
+  throw new Error("Missing SHOPIFY_STORE_DOMAIN");
+}
+
+if (!SHOPIFY_STOREFRONT_TOKEN) {
+  throw new Error("Missing SHOPIFY_STOREFRONT_TOKEN");
+}
+
+const SHOPIFY_ENDPOINT = `https://${SHOPIFY_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
 const PRODUCTS_QUERY = `
   query GetProducts {
@@ -47,7 +56,7 @@ export async function GET() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_TOKEN,
+        "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_TOKEN as string,
       },
       body: JSON.stringify({ query: PRODUCTS_QUERY }),
       cache: "no-store",

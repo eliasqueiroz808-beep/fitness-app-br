@@ -1,98 +1,84 @@
 "use client";
 
-import { type StoreProduct } from "@/lib/shopify";
+import { type FeaturedProduct } from "@/components/shop/FeaturedCarousel";
 
 interface ProductCardProps {
-  product: StoreProduct;
-  /** Compact variant for the horizontal "Destaques" row */
-  featured?: boolean;
+  product: FeaturedProduct;
 }
 
-function formatBRL(amount: string, currency: string) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: currency || "BRL",
-  }).format(Number(amount));
-}
-
-export default function ProductCard({ product, featured = false }: ProductCardProps) {
-  const handleBuy = (e: React.MouseEvent) => {
-    e.stopPropagation();
+export default function ProductCard({ product }: ProductCardProps) {
+  const handleBuy = () => {
+    console.log("[shop] Comprar agora →", product.productUrl);
+    if (!product.productUrl || product.productUrl === "#") return;
     window.open(product.productUrl, "_blank", "noopener,noreferrer");
   };
 
-  if (featured) {
-    return (
-      <div className="flex-shrink-0 w-44 bg-dark-card border border-dark-border rounded-2xl overflow-hidden text-left">
-        <div className="w-full h-32 bg-dark-muted relative overflow-hidden">
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.imageAlt || product.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl">🛍️</div>
-          )}
-          {!product.availableForSale && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-xs font-bold text-white bg-black/60 px-2 py-0.5 rounded-full">
-                Esgotado
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="p-3 space-y-2">
-          <p className="text-xs text-text-secondary line-clamp-2 leading-tight">{product.title}</p>
-          <span className="text-sm font-black text-text-primary">
-            {formatBRL(product.price, product.currency)}
-          </span>
-          <button
-            onClick={handleBuy}
-            disabled={!product.availableForSale}
-            className="w-full py-1.5 gradient-red text-white text-xs font-bold rounded-lg active:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {product.availableForSale ? "Comprar" : "Esgotado"}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Grid card ────────────────────────────────────────────────────────────
   return (
-    <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden text-left w-full">
-      <div className="w-full aspect-square bg-dark-muted relative overflow-hidden">
-        {product.image ? (
+    <div
+      className="featured-card flex flex-col rounded-3xl overflow-hidden w-full"
+      style={{
+        background: "linear-gradient(160deg, #1E1E1E 0%, #161616 100%)",
+        border: "1px solid #2E2E2E",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+      }}
+    >
+      {/* Tag */}
+      <div className="px-3 pt-3 flex justify-end">
+        <span
+          className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+          style={{
+            background: "rgba(230,57,70,0.15)",
+            color: "#E63946",
+            border: "1px solid rgba(230,57,70,0.25)",
+          }}
+        >
+          {product.tag}
+        </span>
+      </div>
+
+      {/* Image — white bg premium */}
+      <div
+        className="mx-3 mt-1 rounded-2xl overflow-hidden flex items-center justify-center"
+        style={{
+          height: "140px",
+          background: "#FFFFFF",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        }}
+      >
+        {product.imageUrl && product.imageUrl !== "COLOCAR_URL_DA_CLOUDINARY_AQUI" ? (
           <img
-            src={product.image}
-            alt={product.imageAlt || product.title}
-            className="w-full h-full object-cover"
+            src={product.imageUrl}
+            alt={product.title}
+            className="product-img h-[122px] w-auto object-contain"
+            style={{ transition: "transform 0.35s ease" }}
+            loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">🛍️</div>
-        )}
-        {!product.availableForSale && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-xs font-bold text-white bg-black/60 px-2 py-1 rounded-full">
-              Esgotado
-            </span>
-          </div>
+          <div className="text-4xl">🛍️</div>
         )}
       </div>
 
-      <div className="p-3 space-y-2">
-        <p className="text-xs text-text-secondary line-clamp-2 leading-snug">{product.title}</p>
-        <span className="text-sm font-black text-text-primary">
-          {formatBRL(product.price, product.currency)}
-        </span>
+      {/* Content */}
+      <div className="px-3 pt-2.5 pb-3 flex flex-col gap-1.5 flex-1">
+        <p className="text-xs font-bold text-text-primary leading-snug line-clamp-2">
+          {product.title}
+        </p>
+        <p className="text-[10px] text-text-secondary leading-snug line-clamp-2">
+          {product.subtitle}
+        </p>
+
         <button
           onClick={handleBuy}
-          disabled={!product.availableForSale}
-          className="w-full py-2 gradient-red text-white text-xs font-bold rounded-xl active:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+          disabled={!product.productUrl || product.productUrl === "#"}
+          className="buy-btn mt-auto w-full py-2 rounded-xl text-white text-xs font-bold tracking-wide disabled:opacity-30 disabled:cursor-not-allowed"
+          style={{
+            background: "linear-gradient(135deg, #E63946 0%, #C1121F 100%)",
+            boxShadow: "0 4px 14px rgba(230,57,70,0.4)",
+            transition: "transform 0.18s ease, box-shadow 0.18s ease",
+          }}
         >
-          {product.availableForSale ? "Comprar agora" : "Esgotado"}
+          {product.buttonText}
         </button>
       </div>
     </div>

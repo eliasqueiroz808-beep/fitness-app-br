@@ -17,7 +17,6 @@ import { getWeekDays, recordWorkoutDate, type WeekDay } from "@/lib/weekly-activ
 import { goalLabels } from "@/lib/plan-generator";
 import {
   loadPremium,
-  activatePremiumMock,
   shouldShowPopupToday,
   markPopupShownToday,
   type PremiumState,
@@ -341,7 +340,6 @@ export default function DashboardPage() {
       {showPremiumCard && (
         <PremiumCard
           state={premium}
-          onActivate={() => setPremium(activatePremiumMock())}
           onClose={() => setShowPremiumCard(false)}
         />
       )}

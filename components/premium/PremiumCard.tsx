@@ -1,27 +1,50 @@
 "use client";
 
+import { useState } from "react";
 import {
   PREMIUM_BENEFITS,
   PREMIUM_PRICE,
   PREMIUM_PERIOD,
   type PremiumState,
 } from "@/lib/premium";
+import { getUserRef } from "@/lib/user-ref";
 
 interface PremiumCardProps {
   state: PremiumState;
-  /** Mock activation — replace with real billing later. */
-  onActivate: () => void;
   onClose: () => void;
 }
 
-/**
- * Full-featured plan bottom sheet.
- * Renders two distinct visual states:
- *   Free    → price block + locked benefits + subscribe CTA
- *   Premium → gold block + unlocked benefits + management note
- */
-export default function PremiumCard({ state, onActivate, onClose }: PremiumCardProps) {
+export default function PremiumCard({ state, onClose }: PremiumCardProps) {
   const { isPremium } = state;
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
+
+  async function handleSubscribe() {
+    setLoading(true);
+    setError(null);
+    try {
+      const userRef = getUserRef();
+      const res     = await fetch("/api/create-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userRef }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.init_point) {
+        const msg = data.details
+          ? `${data.error}: ${data.details}`
+          : (data.error ?? "Erro ao iniciar pagamento");
+        throw new Error(msg);
+      }
+
+      // Redirect to Mercado Pago checkout — premium is only unlocked after webhook confirms
+      window.location.href = data.init_point;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao conectar com o servidor");
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -56,13 +79,7 @@ export default function PremiumCard({ state, onActivate, onClose }: PremiumCardP
               className="w-8 h-8 rounded-full bg-dark-surface flex items-center justify-center active:opacity-70 transition-opacity"
               aria-label="Fechar"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                className="w-4 h-4 text-text-secondary"
-              >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 text-text-secondary">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -76,9 +93,7 @@ export default function PremiumCard({ state, onActivate, onClose }: PremiumCardP
           {isPremium ? (
             <div className="rounded-2xl p-5 text-center bg-gradient-to-br from-yellow-500/15 to-amber-500/10 border border-yellow-500/30">
               <p className="text-3xl font-black text-yellow-400">👑 Premium Ativo</p>
-              <p className="text-sm text-text-secondary mt-2">
-                Acesso completo a todos os recursos
-              </p>
+              <p className="text-sm text-text-secondary mt-2">Acesso completo a todos os recursos</p>
             </div>
           ) : (
             <div className="rounded-2xl p-5 text-center bg-brand-red/10 border border-brand-red/25 card-glow">
@@ -99,33 +114,23 @@ export default function PremiumCard({ state, onActivate, onClose }: PremiumCardP
             <div className="space-y-3">
               {PREMIUM_BENEFITS.map((b) => (
                 <div key={b.id} className="flex items-start gap-3">
-                  <div
-                    className={[
-                      "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0",
-                      isPremium ? "bg-yellow-500/15 border border-yellow-500/20" : "bg-dark-surface",
-                    ].join(" ")}
-                  >
+                  <div className={[
+                    "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0",
+                    isPremium ? "bg-yellow-500/15 border border-yellow-500/20" : "bg-dark-surface",
+                  ].join(" ")}>
                     <span>{isPremium ? b.icon : "🔒"}</span>
                   </div>
                   <div className="flex-1 min-w-0 pt-0.5">
-                    <p
-                      className={[
-                        "text-sm font-semibold leading-tight",
-                        isPremium ? "text-text-primary" : "text-text-secondary",
-                      ].join(" ")}
-                    >
+                    <p className={[
+                      "text-sm font-semibold leading-tight",
+                      isPremium ? "text-text-primary" : "text-text-secondary",
+                    ].join(" ")}>
                       {b.title}
                     </p>
                     <p className="text-xs text-text-muted mt-0.5">{b.description}</p>
                   </div>
                   {isPremium && (
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2.5}
-                      className="w-4 h-4 text-yellow-400 mt-1 shrink-0"
-                    >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 text-yellow-400 mt-1 shrink-0">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   )}
@@ -137,14 +142,20 @@ export default function PremiumCard({ state, onActivate, onClose }: PremiumCardP
           {/* CTA — only shown in free state */}
           {!isPremium && (
             <div className="space-y-2">
+              {error && (
+                <p className="text-xs text-brand-red text-center px-2">{error}</p>
+              )}
               <button
-                onClick={onActivate}
-                className="w-full py-4 rounded-2xl gradient-red text-white text-base font-black shadow-lg active:opacity-90 transition-opacity"
+                onClick={handleSubscribe}
+                disabled={loading}
+                className="w-full py-4 rounded-2xl gradient-red text-white text-base font-black shadow-lg active:opacity-90 transition-opacity disabled:opacity-60"
               >
-                Assinar agora — {PREMIUM_PRICE}/mês
+                {loading
+                  ? "Redirecionando…"
+                  : `Assinar agora — ${PREMIUM_PRICE}/mês`}
               </button>
               <p className="text-center text-xs text-text-muted">
-                Demonstração visual · sem cobrança real nesta versão
+                Você será redirecionado para o Mercado Pago
               </p>
             </div>
           )}

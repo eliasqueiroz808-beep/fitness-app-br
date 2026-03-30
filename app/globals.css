@@ -149,4 +149,56 @@
   .animate-day-complete {
     animation: day-complete-pop 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
   }
+
+  /* Featured products carousel — auto-scroll right to left */
+  @keyframes carousel-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .carousel-track {
+    animation: carousel-scroll 36s linear infinite;
+    will-change: transform;
+  }
+
+  .carousel-track:hover {
+    animation-play-state: paused;
+  }
+
+  /* Card zoom on hover */
+  .featured-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6) !important;
+  }
+
+  /* Product image zoom on card hover */
+  .featured-card:hover .product-img {
+    transform: scale(1.08);
+  }
+
+  /* Buy button lift + glow on hover */
+  .buy-btn:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 6px 20px rgba(230,57,70,0.6) !important;
+  }
+
+  .buy-btn:active:not(:disabled) {
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba(230,57,70,0.3) !important;
+  }
+
+  /* Pulse animation on buy button */
+  @keyframes btn-pulse {
+    0%, 100% { box-shadow: 0 4px 14px rgba(230,57,70,0.4); }
+    50%       { box-shadow: 0 4px 22px rgba(230,57,70,0.7); }
+  }
+
+  .buy-btn:not(:disabled) {
+    animation: btn-pulse 2.4s ease-in-out infinite;
+  }
+
+  .buy-btn:hover:not(:disabled),
+  .buy-btn:active:not(:disabled) {
+    animation: none;
+  }
 }

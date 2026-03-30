@@ -1,75 +1,132 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import AppShell from "@/components/layout/AppShell";
 import ProductCard from "@/components/shop/ProductCard";
-import { fetchShopifyProducts, type StoreProduct } from "@/lib/shopify";
-import { loadPremium, activatePremiumMock, type PremiumState } from "@/lib/premium";
+import FeaturedCarousel, { type FeaturedProduct } from "@/components/shop/FeaturedCarousel";
+import { loadPremium, type PremiumState } from "@/lib/premium";
 import PremiumCard from "@/components/premium/PremiumCard";
 
-// ─── Skeleton ──────────────────────────────────────────────────────────────
-function SkeletonCard() {
-  return (
-    <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden animate-pulse">
-      <div className="w-full aspect-square bg-dark-muted" />
-      <div className="p-3 space-y-2">
-        <div className="h-2.5 bg-dark-muted rounded w-2/3" />
-        <div className="h-2.5 bg-dark-muted rounded w-full" />
-        <div className="h-3 bg-dark-muted rounded w-1/2" />
-      </div>
-    </div>
-  );
-}
+// ── Destaques (carrossel) ─────────────────────────────────────────────────
+const FEATURED_PRODUCTS: FeaturedProduct[] = [
+  {
+    id: "creatina-wod-300g",
+    title: "Creatina Monohidratada 300g WOD Nutrition",
+    subtitle: "5g por dose • 60 doses • pura sem sabor",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774894394/imagem_2026-03-30_151226908_q4ktoa.png",
+    productUrl: "https://empóriodosnaturais.com/products/creatina-monohidratada-300g-wod-nutrition-5g-por-dose-60-doses-pura-sem-sabor",
+    buttonText: "Comprar agora",
+    tag: "Mais vendido",
+  },
+  {
+    id: "cafeina-global-200mg",
+    title: "Cafeína 200mg Global Suplementos",
+    subtitle: "90 cápsulas • energia e foco",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774894446/imagem_2026-03-30_151319462_xvvfjs.png",
+    productUrl: "https://empóriodosnaturais.com/products/cafeina-200mg-90-capsulas-global-suplementos",
+    buttonText: "Comprar agora",
+    tag: "Energia",
+  },
+  {
+    id: "my-shake-diet-chocolate",
+    title: "My Shake Diet Chocolate WOD Nutrition",
+    subtitle: "Shake para emagrecimento • sabor chocolate",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774894494/imagem_2026-03-30_151407916_yz87et.png",
+    productUrl: "https://empóriodosnaturais.com/products/my-shake-diet-chocolate-shake-para-emagrecimento-wod-nutrition",
+    buttonText: "Comprar agora",
+    tag: "Emagrecimento",
+  },
+  {
+    id: "vitasoft-az-global",
+    title: "Vitasoft AZ Multivitamínico",
+    subtitle: "60 cápsulas • suporte diário",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774894558/imagem_2026-03-30_151511701_kro93k.png",
+    productUrl: "https://empóriodosnaturais.com/products/vitasoft-az-multivitaminico-60-capsulas-global-suplementos",
+    buttonText: "Comprar agora",
+    tag: "Vitaminas",
+  },
+  {
+    id: "melatonina-gummies-global",
+    title: "Melatonina Gummies Global Suplementos",
+    subtitle: "60 gomas sabor maracujá",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774894619/imagem_2026-03-30_151612076_bad5ip.png",
+    productUrl: "https://empóriodosnaturais.com/products/melatonina-gummies-60-gomas-maracuja-global-suplementos",
+    buttonText: "Comprar agora",
+    tag: "Sono",
+  },
+];
 
-function SkeletonFeatured() {
-  return (
-    <div className="flex-shrink-0 w-44 bg-dark-card border border-dark-border rounded-2xl overflow-hidden animate-pulse">
-      <div className="w-full h-32 bg-dark-muted" />
-      <div className="p-3 space-y-2">
-        <div className="h-2.5 bg-dark-muted rounded w-3/4" />
-        <div className="h-3 bg-dark-muted rounded w-1/2" />
-      </div>
-    </div>
-  );
-}
+// ── Todos os Produtos (grid) ──────────────────────────────────────────────
+const ALL_PRODUCTS: FeaturedProduct[] = [
+  {
+    id: "ozempic-natural",
+    title: "Ozempic Natural 500mg",
+    subtitle: "60 cápsulas • suplemento alimentar",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774895988/imagem_2026-03-30_153900102_uiv2mu.png",
+    productUrl: "https://empóriodosnaturais.com/products/ozempic-natural-500mg-60-capsulas-suplemento-alimentar",
+    buttonText: "Comprar agora",
+    tag: "Emagrecimento",
+  },
+  {
+    id: "colageno-wod-500g",
+    title: "Colágeno Hidrolisado 500g",
+    subtitle: "Abacaxi com hortelã • WOD Care Nutrition",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774896064/imagem_2026-03-30_154017482_wh6vzr.png",
+    productUrl: "https://empóriodosnaturais.com/products/colageno-hidrolisado-500g-abacaxi-com-hortela-wod-care-nutrition",
+    buttonText: "Comprar agora",
+    tag: "Beleza",
+  },
+  {
+    id: "whey-beijinho-900g",
+    title: "Whey Protein WPC 900g Beijinho",
+    subtitle: "Pouch • alta proteína",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774896534/imagem_2026-03-30_154806415_sthid3.png",
+    productUrl: "https://empóriodosnaturais.com/products/whey-protein-wpc-pouch-900g-beijinho",
+    buttonText: "Comprar agora",
+    tag: "Proteína",
+  },
+  {
+    id: "whey-vitafor-baunilha",
+    title: "Whey Protein WPC 900g Baunilha",
+    subtitle: "Vitafor • 21g de proteína",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774896584/imagem_2026-03-30_154857135_hpm5t7.png",
+    productUrl: "https://empóriodosnaturais.com/products/whey-protein-wpc-900g-baunilha-vitafor-21g-de-proteina",
+    buttonText: "Comprar agora",
+    tag: "Proteína",
+  },
+  {
+    id: "whey-vitafor-morango",
+    title: "Whey Protein WPC 900g Morango",
+    subtitle: "Vitafor • 21g de proteína",
+    imageUrl: "https://res.cloudinary.com/dsetxj6at/image/upload/v1774896643/imagem_2026-03-30_154955951_dofrqg.png",
+    productUrl: "https://empóriodosnaturais.com/products/whey-protein-wpc-900g-morango-vitafor-21g-de-proteina",
+    buttonText: "Comprar agora",
+    tag: "Proteína",
+  },
+];
 
-// ─── Main page ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
 export default function ShopPage() {
-  const [products,        setProducts]        = useState<StoreProduct[]>([]);
   const [search,          setSearch]          = useState("");
-  const [loading,         setLoading]         = useState(true);
-  const [error,           setError]           = useState<string | null>(null);
   const [premium,         setPremium]         = useState<PremiumState>({ isPremium: false, activatedAt: null });
   const [showPremiumCard, setShowPremiumCard] = useState(false);
   const [mounted,         setMounted]         = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchShopifyProducts();
-      setProducts(data);
-    } catch (e) {
-      const raw = e instanceof Error ? e.message : String(e);
-      console.error("[ShopPage] Erro ao carregar:", raw);
-      setError("Não foi possível carregar os produtos da loja no momento.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     setPremium(loadPremium());
     setMounted(true);
-    load();
-  }, [load]);
+  }, []);
 
   if (!mounted) return null;
 
-  const filtered = search.trim()
-    ? products.filter((p) => p.title.toLowerCase().includes(search.trim().toLowerCase()))
-    : products;
-  const featuredProducts = filtered.slice(0, 5);
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? ALL_PRODUCTS.filter((p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.subtitle.toLowerCase().includes(q) ||
+        p.tag.toLowerCase().includes(q)
+      )
+    : ALL_PRODUCTS;
 
   return (
     <AppShell>
@@ -102,81 +159,45 @@ export default function ShopPage() {
         </div>
       </section>
 
-      {/* Error state */}
-      {error && (
-        <section className="px-4 mb-4">
-          <div className="bg-dark-card border border-brand-red/30 rounded-2xl p-6 flex flex-col items-center gap-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-brand-red/10 flex items-center justify-center text-2xl">⚠️</div>
-            <div>
-              <p className="text-sm font-semibold text-text-primary">Não foi possível carregar</p>
-              <p className="text-xs text-text-secondary mt-1">{error}</p>
-            </div>
-            <button
-              onClick={load}
-              className="px-6 py-2.5 gradient-red text-white text-sm font-bold rounded-xl active:opacity-90 transition-opacity"
-            >
-              Tentar novamente
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* Featured / horizontal scroll */}
-      {!error && (
-        <section className="mb-4">
-          <div className="px-4 mb-3">
-            <h2 className="text-base font-bold text-text-primary">Destaques</h2>
-          </div>
-          <div className="flex gap-3 overflow-x-auto px-4 pb-1">
-            {loading
-              ? Array.from({ length: 4 }).map((_, i) => <SkeletonFeatured key={i} />)
-              : featuredProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} featured />
-                ))}
-          {!loading && featuredProducts.length === 0 && (
-            <p className="text-sm text-text-muted py-4">Nenhum destaque encontrado</p>
-          )}
-          </div>
-        </section>
-      )}
+      {/* Featured carousel */}
+      <section className="mb-6">
+        <div className="px-4 mb-3 flex items-center gap-2">
+          <h2 className="text-base font-bold text-text-primary">Destaques</h2>
+          <span
+            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(230,57,70,0.12)", color: "#E63946" }}
+          >
+            {FEATURED_PRODUCTS.length} produtos
+          </span>
+        </div>
+        <FeaturedCarousel products={FEATURED_PRODUCTS} />
+      </section>
 
       {/* Product grid */}
-      {!error && (
-        <section className="px-4 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-text-primary">Todos os Produtos</h2>
-            {!loading && (
-              <span className="text-xs text-text-muted">
-                {filtered.length} {filtered.length === 1 ? "item" : "itens"}
-              </span>
-            )}
-          </div>
+      <section className="px-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-bold text-text-primary">Todos os Produtos</h2>
+          <span className="text-xs text-text-muted">
+            {filtered.length} {filtered.length === 1 ? "item" : "itens"}
+          </span>
+        </div>
 
-          {loading ? (
-            <div className="grid grid-cols-2 gap-3">
-              {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-            </div>
-          ) : filtered.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3">
-              {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3 py-12 text-center">
-              <span className="text-4xl">🛒</span>
-              <p className="text-sm text-text-secondary">
-                {search ? `Nenhum produto encontrado para "${search}"` : "Nenhum produto encontrado"}
-              </p>
-              {search && (
-                <button onClick={() => setSearch("")} className="text-xs text-brand-red font-semibold">
-                  Limpar busca
-                </button>
-              )}
-            </div>
-          )}
-        </section>
-      )}
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
+            <span className="text-4xl">🛒</span>
+            <p className="text-sm text-text-secondary">
+              Nenhum produto encontrado para &ldquo;{search}&rdquo;
+            </p>
+            <button onClick={() => setSearch("")} className="text-xs text-brand-red font-semibold">
+              Limpar busca
+            </button>
+          </div>
+        )}
+      </section>
 
       {/* Premium section */}
       <section className="px-4 mb-6">
@@ -191,8 +212,7 @@ export default function ShopPage() {
           <div
             className="h-0.5 w-full"
             style={{
-              background:
-                "linear-gradient(90deg, transparent 0%, #E63946 40%, #FF8C42 60%, transparent 100%)",
+              background: "linear-gradient(90deg, transparent 0%, #E63946 40%, #FF8C42 60%, transparent 100%)",
             }}
           />
           <div className="px-5 pt-5 pb-6 flex flex-col gap-4">
@@ -241,7 +261,6 @@ export default function ShopPage() {
       {showPremiumCard && (
         <PremiumCard
           state={premium}
-          onActivate={() => setPremium(activatePremiumMock())}
           onClose={() => setShowPremiumCard(false)}
         />
       )}

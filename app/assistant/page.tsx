@@ -5,7 +5,7 @@ import AppShell from "@/components/layout/AppShell";
 import AssistantScreen from "@/components/assistant/AssistantScreen";
 import AssistantLockScreen from "@/components/assistant/AssistantLockScreen";
 import PremiumCard from "@/components/premium/PremiumCard";
-import { loadPremium, activatePremiumMock, type PremiumState } from "@/lib/premium";
+import { loadPremium, type PremiumState } from "@/lib/premium";
 import { useRouter } from "next/navigation";
 
 export default function AssistantPage() {
@@ -67,10 +67,6 @@ export default function AssistantPage() {
       {showPremiumCard && (
         <PremiumCard
           state={premium}
-          onActivate={() => {
-            setPremium(activatePremiumMock());
-            setShowPremiumCard(false);
-          }}
           onClose={() => setShowPremiumCard(false)}
         />
       )}
