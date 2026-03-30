@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-dark-bg text-text-primary font-sans antialiased;
+    overscroll-behavior: none;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .gradient-red {
+    background: linear-gradient(135deg, #E63946 0%, #C1121F 100%);
+  }
+
+  .gradient-dark {
+    background: linear-gradient(180deg, #1A1A1A 0%, #0D0D0D 100%);
+  }
+
+  .text-gradient-red {
+    background: linear-gradient(135deg, #FF6B6B 0%, #E63946 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card-glow {
+    box-shadow: 0 0 20px rgba(230, 57, 70, 0.15);
+  }
+
+  .bottom-nav-blur {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* ── Light theme ─────────────────────────────────────────────────────────── */
+  /* Overrides Tailwind's dark-* and text-* custom tokens when html.light is set. */
+
+  html.light body,
+  html.light .bg-dark-bg {
+    background-color: #F2F2F7;
+  }
+
+  html.light .bg-dark-surface {
+    background-color: #E8E8EF;
+  }
+
+  html.light .bg-dark-surface\/90 {
+    background-color: rgb(232 232 239 / 0.9);
+  }
+
+  html.light .bg-dark-card {
+    background-color: #FFFFFF;
+  }
+
+  html.light .bg-dark-muted {
+    background-color: #D1D1D6;
+  }
+
+  html.light .border-dark-border {
+    border-color: #C7C7CC;
+  }
+
+  html.light .divide-dark-border\/50 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgb(199 199 204 / 0.5);
+  }
+
+  html.light .text-text-primary {
+    color: #1C1C1E;
+  }
+
+  html.light .text-text-secondary {
+    color: #3A3A3C;
+  }
+
+  html.light .text-text-muted {
+    color: #8E8E93;
+  }
+
+  html.light .card-glow {
+    box-shadow: 0 0 20px rgba(230, 57, 70, 0.08);
+  }
+
+  html.light .gradient-dark {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F2F2F7 100%);
+  }
+
+  /* Premium popup enter / exit */
+  @keyframes popup-enter {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1);    }
+  }
+  @keyframes popup-exit {
+    from { opacity: 1; transform: scale(1);    }
+    to   { opacity: 0; transform: scale(0.94); }
+  }
+  .animate-popup-enter {
+    animation: popup-enter 0.32s cubic-bezier(0.34, 1.46, 0.64, 1) forwards;
+  }
+  .animate-popup-exit {
+    animation: popup-exit 0.22s ease-in forwards;
+  }
+
+  /* CTA button pulse — "Gerar Meu Plano" */
+  @keyframes cta-pulse {
+    0%, 100% { box-shadow: 0 0 0 0   rgba(230, 57, 70, 0.5); }
+    55%       { box-shadow: 0 0 0 14px rgba(230, 57, 70, 0); }
+  }
+  .animate-cta-pulse {
+    animation: cta-pulse 2.2s ease-out infinite;
+    border-radius: 1rem; /* matches rounded-2xl */
+  }
+
+  /* Weekly activity day completion pop */
+  @keyframes day-complete-pop {
+    0%   { transform: scale(1);    box-shadow: 0 0 0   0   rgba(230, 57, 70, 0);    }
+    25%  { transform: scale(1.45); box-shadow: 0 0 18px 8px rgba(230, 57, 70, 0.55); }
+    65%  { transform: scale(0.88); box-shadow: 0 0 10px 3px rgba(230, 57, 70, 0.3);  }
+    100% { transform: scale(1);    box-shadow: 0 0 0   0   rgba(230, 57, 70, 0);    }
+  }
+
+  .animate-day-complete {
+    animation: day-complete-pop 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+  }
+}
