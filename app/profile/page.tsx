@@ -24,6 +24,9 @@ import {
 import PremiumBanner from "@/components/premium/PremiumBanner";
 import PremiumModal  from "@/components/premium/PremiumModal";
 import PremiumCard   from "@/components/premium/PremiumCard";
+import InstallPopup  from "@/components/profile/InstallPopup";
+import InstallCard   from "@/components/profile/InstallCard";
+import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 
 // ── Theme helpers (plain localStorage — NOT JSON-encoded, to match init script) ─
 
@@ -90,6 +93,10 @@ export default function ProfilePage() {
   const [showPremiumCard,  setShowPremiumCard]  = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Install prompt
+  const { canInstall, installing, showIOSGuide, dismissIOSGuide, triggerInstall } = useInstallPrompt();
+  const [showInstallPopup, setShowInstallPopup] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -107,6 +114,21 @@ export default function ProfilePage() {
 
     // Load premium state
     setPremium(loadPremium());
+
+    // Install popup: show once per day
+    const KEY = "profileInstallPopupShownAt";
+    const lastShown = localStorage.getItem(KEY);
+    const oneDayMs  = 24 * 60 * 60 * 1000;
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    if (!isStandalone && (!lastShown || Date.now() - Number(lastShown) > oneDayMs)) {
+      // Small delay so the page renders first
+      setTimeout(() => {
+        setShowInstallPopup(true);
+        localStorage.setItem(KEY, String(Date.now()));
+      }, 1200);
+    }
 
     setMounted(true);
   }, []);
@@ -307,6 +329,13 @@ export default function ProfilePage() {
                 : "Mantenha a consistencia para evoluir de nivel."}
             </p>
           </Card>
+        </section>
+      )}
+
+      {/* Install App Card */}
+      {canInstall && (
+        <section className="px-4 mb-4">
+          <InstallCard installing={installing} onInstall={triggerInstall} />
         </section>
       )}
 
@@ -522,6 +551,16 @@ export default function ProfilePage() {
           {plan ? new Date(plan.createdAt).toLocaleDateString("pt-BR") : "—"}
         </p>
       </div>
+
+      {/* ── Install Popup ───────────────────────────────────────────────────── */}
+      {(showInstallPopup || showIOSGuide) && canInstall && (
+        <InstallPopup
+          installing={installing}
+          showIOSGuide={showIOSGuide}
+          onInstall={triggerInstall}
+          onClose={() => { setShowInstallPopup(false); dismissIOSGuide(); }}
+        />
+      )}
 
       {/* ── Premium Card (full plan bottom sheet) ───────────────────────────── */}
       {showPremiumCard && (

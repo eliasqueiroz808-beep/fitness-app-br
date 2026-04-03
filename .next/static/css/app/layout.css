@@ -628,6 +628,9 @@ video {
 .right-3 {
   right: 0.75rem;
 }
+.right-4 {
+  right: 1rem;
+}
 .top-0 {
   top: 0px;
 }
@@ -636,6 +639,9 @@ video {
 }
 .top-3 {
   top: 0.75rem;
+}
+.top-4 {
+  top: 1rem;
 }
 .z-10 {
   z-index: 10;
@@ -710,6 +716,12 @@ video {
 .mt-3 {
   margin-top: 0.75rem;
 }
+.mt-4 {
+  margin-top: 1rem;
+}
+.mt-5 {
+  margin-top: 1.25rem;
+}
 .mt-auto {
   margin-top: auto;
 }
@@ -770,6 +782,9 @@ video {
 .h-12 {
   height: 3rem;
 }
+.h-14 {
+  height: 3.5rem;
+}
 .h-16 {
   height: 4rem;
 }
@@ -784,6 +799,9 @@ video {
 }
 .h-3 {
   height: 0.75rem;
+}
+.h-3\.5 {
+  height: 0.875rem;
 }
 .h-32 {
   height: 8rem;
@@ -848,6 +866,9 @@ video {
 .w-12 {
   width: 3rem;
 }
+.w-14 {
+  width: 3.5rem;
+}
 .w-16 {
   width: 4rem;
 }
@@ -862,6 +883,9 @@ video {
 }
 .w-3 {
   width: 0.75rem;
+}
+.w-3\.5 {
+  width: 0.875rem;
 }
 .w-32 {
   width: 8rem;
@@ -907,6 +931,9 @@ video {
 }
 .min-w-0 {
   min-width: 0px;
+}
+.min-w-\[72px\] {
+  min-width: 72px;
 }
 .max-w-\[78\%\] {
   max-width: 78%;
@@ -2079,6 +2106,10 @@ html.light .hover\:text-text-secondary:hover {
 
 .disabled\:opacity-60:disabled {
   opacity: 0.6;
+}
+
+.disabled\:opacity-70:disabled {
+  opacity: 0.7;
 }
 
 .disabled\:active\:scale-100:active:disabled {

@@ -36,6 +36,23 @@ export default function RootLayout({
             __html: `try{if(localStorage.getItem('fitbr_theme')==='light')document.documentElement.classList.add('light')}catch(e){}`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Register service worker
+              if('serviceWorker' in navigator){
+                window.addEventListener('load', function(){
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+              // Capture install prompt as early as possible
+              window.addEventListener('beforeinstallprompt', function(e){
+                e.preventDefault();
+                window.deferredPrompt = e;
+              });
+            `,
+          }}
+        />
       </head>
       <body>
         <div className="relative mx-auto min-h-screen max-w-md overflow-x-hidden">
