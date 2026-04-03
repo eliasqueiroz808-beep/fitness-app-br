@@ -16,26 +16,25 @@ declare global {
 }
 
 export type InstallState =
-  | "idle"              // determining state
-  | "prompt_available"  // beforeinstallprompt captured — can install natively
-  | "prompting"         // native prompt is open
-  | "installed"         // already installed / standalone
-  | "fallback_ios"      // iPhone/iPad — manual guide
-  | "fallback_android"  // Android but no prompt yet
-  | "fallback_desktop"; // Desktop, no prompt
+  | "idle"       // still detecting
+  | "ready"      // deferredPrompt captured → native install available RIGHT NOW
+  | "prompting"  // prompt is open, waiting for user choice
+  | "installed"  // standalone / already installed
+  | "ios"        // iPhone/iPad — no native prompt, show manual guide
+  | "no_prompt"; // Android or Desktop — browser hasn't fired event yet, hide main button
 
 export type InstallPlatform = "ios" | "android" | "desktop";
 
 export interface InstallAppFlow {
   platform: InstallPlatform;
   installState: InstallState;
-  /** Show install UI — false when already installed */
+  /** True only when deferredPrompt is captured and native install is available */
   canInstall: boolean;
   isInstalled: boolean;
   sheetOpen: boolean;
   openSheet: () => void;
   closeSheet: () => void;
-  /** Primary action: tries native prompt, falls back to sheet */
+  /** Triggers native prompt (when canInstall) or opens sheet (fallback) */
   installApp: () => Promise<void>;
 }
 
@@ -72,17 +71,17 @@ export function useInstallAppFlow(): InstallAppFlow {
       return;
     }
 
-    // Set initial fallback state based on platform (no prompt yet)
-    const fallback: InstallState =
-      plat === "ios" ? "fallback_ios" :
-      plat === "android" ? "fallback_android" :
-      "fallback_desktop";
-    setInstallState(fallback);
+    // iOS can never fire beforeinstallprompt — set immediately
+    if (plat === "ios") {
+      setInstallState("ios");
+    } else {
+      setInstallState("no_prompt"); // Android/Desktop: wait for event
+    }
 
-    // Inherit a prompt captured before React mounted (in layout.tsx inline script)
+    // Inherit prompt captured early in layout.tsx inline script
     if (window.deferredPrompt) {
       setDeferredPrompt(window.deferredPrompt);
-      setInstallState("prompt_available");
+      setInstallState("ready");
     }
 
     const onPrompt = (e: Event) => {
@@ -90,7 +89,7 @@ export function useInstallAppFlow(): InstallAppFlow {
       const evt = e as BeforeInstallPromptEvent;
       window.deferredPrompt = evt;
       setDeferredPrompt(evt);
-      setInstallState("prompt_available");
+      setInstallState("ready");
     };
 
     const onInstalled = () => {
@@ -113,34 +112,38 @@ export function useInstallAppFlow(): InstallAppFlow {
     if (installState === "prompting" || installState === "installed") return;
 
     if (deferredPrompt) {
+      // ── Native install: open browser prompt immediately ────────────────────
       setInstallState("prompting");
       try {
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
+        console.log("[PWA] Install prompt outcome:", outcome);
         if (outcome === "accepted") {
           setInstallState("installed");
           setSheetOpen(false);
           setDeferredPrompt(null);
           window.deferredPrompt = undefined;
+          // Persist so FAB never shows again
+          try { localStorage.setItem("pwaInstalled", "1"); } catch {}
         } else {
-          setInstallState("prompt_available");
+          // User dismissed — go back to ready so they can try again
+          setInstallState("ready");
         }
       } catch {
-        setInstallState("prompt_available");
+        setInstallState("ready");
       }
-    } else {
-      // No native prompt — open the contextual sheet
-      setSheetOpen(true);
+      return;
     }
-  }, [deferredPrompt, installState]);
 
-  const isInstalled = installState === "installed";
+    // No native prompt — open contextual guide sheet
+    setSheetOpen(true);
+  }, [deferredPrompt, installState]);
 
   return {
     platform,
     installState,
-    canInstall:  !isInstalled,
-    isInstalled,
+    canInstall:  installState === "ready" || installState === "prompting",
+    isInstalled: installState === "installed",
     sheetOpen,
     openSheet:  () => setSheetOpen(true),
     closeSheet: () => setSheetOpen(false),

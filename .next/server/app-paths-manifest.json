@@ -1,7 +1,26 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/meta-dashboard/page": "app/admin/meta-dashboard/page.js",
+  "/api/assistant/route": "app/api/assistant/route.js",
+  "/api/billing/create-checkout/route": "app/api/billing/create-checkout/route.js",
+  "/api/billing/create-payment/route": "app/api/billing/create-payment/route.js",
+  "/api/create-payment/route": "app/api/create-payment/route.js",
+  "/api/premium/status/route": "app/api/premium/status/route.js",
+  "/api/shop/collections/route": "app/api/shop/collections/route.js",
+  "/api/shop/products/route": "app/api/shop/products/route.js",
+  "/api/shopify/products/route": "app/api/shopify/products/route.js",
+  "/api/verify-payment/route": "app/api/verify-payment/route.js",
+  "/api/webhook/mercadopago/route": "app/api/webhook/mercadopago/route.js",
+  "/assistant/page": "app/assistant/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/meals/page": "app/meals/page.js",
   "/page": "app/page.js",
+  "/premium/failure/page": "app/premium/failure/page.js",
   "/profile/page": "app/profile/page.js",
   "/setup/page": "app/setup/page.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/shop/page": "app/shop/page.js",
+  "/workouts/[id]/page": "app/workouts/[id]/page.js",
+  "/workouts/gw-peito-triceps/page": "app/workouts/gw-peito-triceps/page.js",
+  "/workouts/page": "app/workouts/page.js",
+  "/premium/success/page": "app/premium/success/page.js"
 }

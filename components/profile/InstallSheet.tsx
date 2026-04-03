@@ -10,42 +10,42 @@ interface InstallSheetProps {
   onClose: () => void;
 }
 
-// ── iOS step guide ─────────────────────────────────────────────────────────────
+// ── iOS Guide ──────────────────────────────────────────────────────────────────
 
-function IOSGuide() {
+function IOSGuide({ onClose }: { onClose: () => void }) {
   const steps = [
     {
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E63946" strokeWidth={2} className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
         </svg>
       ),
-      text: 'Toque no botão Compartilhar na barra do Safari',
-      note: 'É o ícone de seta apontando para cima, na parte inferior',
+      title: "Toque em Compartilhar",
+      desc: "Ícone de seta na barra inferior do Safari",
     },
     {
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E63946" strokeWidth={2} className="w-5 h-5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
       ),
-      text: 'Selecione "Adicionar à Tela de Início"',
-      note: 'Role para baixo no menu de compartilhamento para encontrar a opção',
+      title: 'Selecione "Adicionar à Tela de Início"',
+      desc: "Role para baixo no menu de compartilhamento",
     },
     {
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E63946" strokeWidth={2} className="w-5 h-5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
         </svg>
       ),
-      text: 'Toque em "Adicionar" para confirmar',
-      note: 'O app aparecerá na sua tela inicial como um app nativo',
+      title: 'Toque em "Adicionar" para confirmar',
+      desc: "O app aparece na tela inicial como um app nativo",
     },
   ];
 
   return (
-    <div>
-      <div className="mb-1">
+    <>
+      <div className="mb-3">
         <span
           className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
           style={{ background: "rgba(230,57,70,0.12)", color: "#E63946" }}
@@ -53,191 +53,142 @@ function IOSGuide() {
           Leva menos de 10 segundos
         </span>
       </div>
-      <h3 className="text-xl font-black text-text-primary mt-3 leading-tight">
+      <h3 className="text-xl font-black text-text-primary leading-tight mb-1.5">
         Como instalar no iPhone
       </h3>
-      <p className="text-sm text-text-secondary mt-1.5 mb-5">
-        Siga os passos abaixo no Safari para adicionar à sua tela inicial:
+      <p className="text-sm text-text-secondary mb-5 leading-relaxed">
+        Siga os passos abaixo no Safari:
       </p>
 
-      <ol className="space-y-3">
+      <ol className="space-y-2.5">
         {steps.map((step, i) => (
           <li
             key={i}
-            className="flex gap-3.5 items-start p-3.5 rounded-2xl"
+            className="flex gap-3.5 items-center px-4 py-3.5 rounded-2xl"
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
           >
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "rgba(230,57,70,0.12)", color: "#E63946" }}
+              style={{ background: "rgba(230,57,70,0.10)" }}
             >
               {step.icon}
             </div>
             <div>
-              <p className="text-sm font-semibold text-text-primary leading-snug">{step.text}</p>
-              <p className="text-xs text-text-muted mt-0.5 leading-snug">{step.note}</p>
+              <p className="text-sm font-semibold text-text-primary leading-snug">{step.title}</p>
+              <p className="text-xs text-text-muted mt-0.5">{step.desc}</p>
             </div>
           </li>
         ))}
       </ol>
-    </div>
+
+      <button
+        onClick={onClose}
+        className="mt-5 w-full py-4 rounded-2xl text-white text-sm font-bold"
+        style={{ background: "linear-gradient(135deg, #E63946 0%, #c02535 100%)" }}
+      >
+        Entendido
+      </button>
+    </>
   );
 }
 
-// ── Android fallback ───────────────────────────────────────────────────────────
+// ── Desktop/Android help ───────────────────────────────────────────────────────
 
-function AndroidFallback() {
+function ManualGuide({ platform, onClose }: { platform: InstallPlatform; onClose: () => void }) {
+  const isDesktop = platform === "desktop";
+  const isAndroid = platform === "android";
+
   return (
-    <div>
-      <span
-        className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-        style={{ background: "rgba(255,200,50,0.12)", color: "#F5C543" }}
-      >
-        Quase pronto
-      </span>
-      <h3 className="text-xl font-black text-text-primary mt-3 leading-tight">
-        Instalação disponível em instantes
+    <>
+      <h3 className="text-xl font-black text-text-primary leading-tight mb-2">
+        {isDesktop ? "Instalar no computador" : isAndroid ? "Instalação quase pronta" : "Adicionar à tela inicial"}
       </h3>
-      <p className="text-sm text-text-secondary mt-2 leading-relaxed">
-        Continue navegando por alguns segundos e o botão de instalação será liberado automaticamente pelo Chrome.
+      <p className="text-sm text-text-secondary mb-5 leading-relaxed">
+        {isDesktop
+          ? "Use o Google Chrome ou Edge para instalar este app direto pelo navegador."
+          : isAndroid
+          ? "Continue usando o app por alguns segundos e o botão de instalação será liberado automaticamente. Ou instale agora pelo menu do Chrome:"
+          : "Abra este site no Chrome para Android e siga os passos abaixo."}
       </p>
 
       <div
-        className="mt-4 rounded-2xl p-4 flex gap-3 items-start"
+        className="rounded-2xl p-4 space-y-4"
         style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
       >
-        <span className="text-lg shrink-0">💡</span>
-        <div>
-          <p className="text-xs font-semibold text-text-primary">Alternativa manual</p>
-          <p className="text-xs text-text-muted mt-0.5 leading-relaxed">
-            Toque no menu <strong className="text-text-secondary">⋮</strong> do Chrome e selecione <strong className="text-text-secondary">"Adicionar à tela inicial"</strong>
-          </p>
-        </div>
-      </div>
-
-      {/* TODO: Descomente abaixo quando o app for publicado na Play Store:
-      <a
-        href="https://play.google.com/store/apps/details?id=com.protocolo5"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 w-full py-3 rounded-2xl text-white text-sm font-bold flex items-center justify-center gap-2"
-        style={{ background: "linear-gradient(135deg, #01875F 0%, #016145 100%)" }}
-      >
-        Abrir na Play Store
-      </a>
-      */}
-    </div>
-  );
-}
-
-// ── Desktop fallback ───────────────────────────────────────────────────────────
-
-function DesktopFallback() {
-  return (
-    <div>
-      <span
-        className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-        style={{ background: "rgba(230,57,70,0.12)", color: "#E63946" }}
-      >
-        Computador
-      </span>
-      <h3 className="text-xl font-black text-text-primary mt-3 leading-tight">
-        Instalar no computador
-      </h3>
-      <p className="text-sm text-text-secondary mt-2 leading-relaxed">
-        Você pode instalar este app direto pelo navegador, sem precisar da loja de apps.
-      </p>
-
-      <div
-        className="mt-4 rounded-2xl p-4 space-y-3"
-        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
-      >
-        {[
-          { browser: "Google Chrome", instruction: 'Procure o ícone ⊕ na barra de endereço e clique em "Instalar"' },
-          { browser: "Microsoft Edge", instruction: 'Clique nos três pontos … e selecione "Aplicativos → Instalar este site"' },
-        ].map(({ browser, instruction }) => (
-          <div key={browser} className="flex gap-3">
-            <span className="text-base shrink-0">🌐</span>
-            <div>
-              <p className="text-xs font-semibold text-text-primary">{browser}</p>
-              <p className="text-xs text-text-muted mt-0.5">{instruction}</p>
+        {isDesktop ? (
+          <>
+            <div className="flex gap-3 items-start">
+              <span className="text-lg shrink-0">🌐</span>
+              <div>
+                <p className="text-xs font-semibold text-text-primary">Google Chrome</p>
+                <p className="text-xs text-text-muted mt-0.5">Clique no ícone <strong className="text-text-secondary">⊕</strong> na barra de endereço e selecione "Instalar"</p>
+              </div>
             </div>
-          </div>
-        ))}
+            <div className="flex gap-3 items-start">
+              <span className="text-lg shrink-0">🌐</span>
+              <div>
+                <p className="text-xs font-semibold text-text-primary">Microsoft Edge</p>
+                <p className="text-xs text-text-muted mt-0.5">Clique nos três pontos <strong className="text-text-secondary">…</strong> e vá em <strong className="text-text-secondary">Aplicativos → Instalar este site</strong></p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex gap-3 items-start">
+              <span className="text-lg shrink-0">⋮</span>
+              <div>
+                <p className="text-xs font-semibold text-text-primary">Menu do Chrome</p>
+                <p className="text-xs text-text-muted mt-0.5">Toque nos três pontos no canto superior direito do Chrome</p>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="text-lg shrink-0">➕</span>
+              <div>
+                <p className="text-xs font-semibold text-text-primary">Adicionar à tela inicial</p>
+                <p className="text-xs text-text-muted mt-0.5">Toque nessa opção para instalar o app na sua tela inicial</p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
-    </div>
+
+      <button
+        onClick={onClose}
+        className="mt-5 w-full py-4 rounded-2xl text-white text-sm font-bold"
+        style={{ background: "linear-gradient(135deg, #E63946 0%, #c02535 100%)" }}
+      >
+        Entendido
+      </button>
+    </>
   );
 }
 
-// ── Native install view ────────────────────────────────────────────────────────
+// ── Native install confirmation (ready state, opened via sheet) ───────────────
 
-function NativeInstall({
+function NativeInstallContent({
   platform,
   onInstall,
   isLoading,
+  onClose,
 }: {
   platform: InstallPlatform;
   onInstall: () => void;
   isLoading: boolean;
+  onClose: () => void;
 }) {
-  const copy = {
-    android: {
-      tag: "Android · Chrome",
-      title: "Instale o app e acesse seu plano mais rápido",
-      body: "Adicione este app à tela inicial para abrir com um toque, receber notificações e acompanhar seu plano com mais praticidade.",
-      sub: "Sem precisar baixar pela loja.",
-      btn: "Instalar app",
-    },
-    desktop: {
-      tag: "Computador",
-      title: "Instale o app e acesse seu plano mais rápido",
-      body: "Adicione este app à sua área de trabalho para abrir com um clique e ter acesso completo ao seu plano de treino e nutrição.",
-      sub: "Instalação rápida, direto pelo navegador.",
-      btn: "Instalar no computador",
-    },
-    ios: {
-      tag: "iPhone · Safari",
-      title: "Instale o app e acesse seu plano mais rápido",
-      body: "Adicione à sua tela inicial para abrir com um toque e ter a experiência completa do app.",
-      sub: "Leva menos de 10 segundos.",
-      btn: "Ver como instalar",
-    },
-  }[platform];
-
   return (
-    <div>
-      <span
-        className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-        style={{ background: "rgba(230,57,70,0.12)", color: "#E63946" }}
-      >
-        {copy.tag}
-      </span>
-
-      <h3 className="text-xl font-black text-text-primary mt-3 leading-tight">
-        {copy.title}
+    <>
+      <h3 className="text-xl font-black text-text-primary leading-tight mb-2">
+        Instale o app e acesse seu plano mais rápido
       </h3>
-      <p className="text-sm text-text-secondary mt-2 leading-relaxed">{copy.body}</p>
-
-      <ul className="mt-4 space-y-2">
-        {["Acesso com um toque, sem abrir o navegador", "Notificações e lembretes de treino", "Experiência de app nativo"].map((b) => (
-          <li key={b} className="flex items-center gap-2.5">
-            <span
-              className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: "rgba(230,57,70,0.15)" }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="#E63946" strokeWidth={3} className="w-2.5 h-2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            </span>
-            <span className="text-xs text-text-secondary">{b}</span>
-          </li>
-        ))}
-      </ul>
+      <p className="text-sm text-text-secondary mb-5 leading-relaxed">
+        Adicione à {platform === "desktop" ? "área de trabalho" : "tela inicial"} para abrir com um toque, receber notificações e ter acesso completo mesmo offline.
+      </p>
 
       <button
         onClick={onInstall}
         disabled={isLoading}
-        className="mt-5 w-full py-4 rounded-2xl text-white text-sm font-black tracking-wide shadow-lg active:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
+        className="w-full py-4 rounded-2xl text-white text-sm font-black tracking-wide flex items-center justify-center gap-2 disabled:opacity-60 active:opacity-90 transition-opacity"
         style={{ background: "linear-gradient(135deg, #E63946 0%, #c02535 100%)" }}
       >
         {isLoading ? (
@@ -248,10 +199,17 @@ function NativeInstall({
             </svg>
             Instalando…
           </>
-        ) : copy.btn}
+        ) : "Instalar app"}
       </button>
-      <p className="text-center text-xs text-text-muted mt-2">{copy.sub}</p>
-    </div>
+
+      <button
+        onClick={onClose}
+        disabled={isLoading}
+        className="mt-2 w-full py-3 rounded-2xl text-text-muted text-sm font-medium active:opacity-70 transition-opacity"
+      >
+        Continuar no navegador
+      </button>
+    </>
   );
 }
 
@@ -261,7 +219,6 @@ export default function InstallSheet({ installState, platform, onInstall, onClos
   const sheetRef = useRef<HTMLDivElement>(null);
   const isLoading = installState === "prompting";
 
-  // Slide-up on mount
   useEffect(() => {
     const el = sheetRef.current;
     if (!el) return;
@@ -276,44 +233,37 @@ export default function InstallSheet({ installState, platform, onInstall, onClos
     });
   }, []);
 
-  const showContent = () => {
-    switch (installState) {
-      case "fallback_ios":     return <IOSGuide />;
-      case "fallback_android": return <AndroidFallback />;
-      case "fallback_desktop": return <DesktopFallback />;
-      default:
-        return (
-          <NativeInstall
-            platform={platform}
-            onInstall={onInstall}
-            isLoading={isLoading}
-          />
-        );
-    }
-  };
-
-  const isFallback = installState.startsWith("fallback_");
+  function renderContent() {
+    if (installState === "ios") return <IOSGuide onClose={onClose} />;
+    if (installState === "no_prompt") return <ManualGuide platform={platform} onClose={onClose} />;
+    // ready or prompting
+    return (
+      <NativeInstallContent
+        platform={platform}
+        onInstall={onInstall}
+        isLoading={isLoading}
+        onClose={onClose}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Sheet */}
       <div
         ref={sheetRef}
-        className="relative w-full max-w-md rounded-t-3xl shadow-2xl"
+        className="relative w-full max-w-md rounded-t-3xl shadow-2xl overflow-y-auto"
         style={{
           background: "linear-gradient(170deg, #1C1C1C 0%, #111111 100%)",
           border: "1px solid rgba(255,255,255,0.07)",
           borderBottom: "none",
           maxHeight: "90vh",
-          overflowY: "auto",
         }}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.14)" }} />
         </div>
 
         {/* Close */}
@@ -328,18 +278,8 @@ export default function InstallSheet({ installState, platform, onInstall, onClos
           </svg>
         </button>
 
-        {/* Content */}
         <div className="px-6 pt-2 pb-8">
-          {showContent()}
-
-          {/* Secondary close button */}
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="mt-3 w-full py-3 rounded-2xl text-text-muted text-sm font-medium active:opacity-70 transition-opacity disabled:opacity-40"
-          >
-            {isFallback ? "Entendido" : "Continuar no navegador"}
-          </button>
+          {renderContent()}
         </div>
       </div>
     </div>

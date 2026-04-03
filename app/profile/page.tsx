@@ -24,9 +24,11 @@ import {
 import PremiumBanner from "@/components/premium/PremiumBanner";
 import PremiumModal  from "@/components/premium/PremiumModal";
 import PremiumCard   from "@/components/premium/PremiumCard";
-import InstallCard         from "@/components/profile/InstallCard";
-import InstallSheet        from "@/components/profile/InstallSheet";
-import { useInstallAppFlow } from "@/hooks/useInstallAppFlow";
+import InstallCard            from "@/components/profile/InstallCard";
+import InstallSheet           from "@/components/profile/InstallSheet";
+import InstallFAB             from "@/components/pwa/InstallFAB";
+import InstallFallbackModal   from "@/components/pwa/InstallFallbackModal";
+import { useInstallAppFlow }  from "@/hooks/useInstallAppFlow";
 
 // ── Theme helpers (plain localStorage — NOT JSON-encoded, to match init script) ─
 
@@ -97,12 +99,16 @@ export default function ProfilePage() {
   const {
     platform,
     installState,
-    canInstall,
+    isInstalled,
     sheetOpen,
     openSheet,
     closeSheet,
     installApp,
   } = useInstallAppFlow();
+
+  // FAB visibility + fallback modal
+  const [fabVisible,    setFabVisible]    = useState(false);
+  const [fallbackOpen,  setFallbackOpen]  = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -122,17 +128,30 @@ export default function ProfilePage() {
     // Load premium state
     setPremium(loadPremium());
 
-    // Install sheet auto-show: once per day
-    const POPUP_KEY = "profileInstallShownAt";
-    const lastShown   = localStorage.getItem(POPUP_KEY);
+    // ── FAB smart trigger ─────────────────────────────────────────────────────
+    // Rules: not installed, not dismissed in last 24h, not accepted before
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    if (!isStandalone && (!lastShown || Date.now() - Number(lastShown) > 86_400_000)) {
-      setTimeout(() => {
-        openSheet();
-        localStorage.setItem(POPUP_KEY, String(Date.now()));
-      }, 1800);
+
+    if (!isStandalone && !localStorage.getItem("pwaInstalled")) {
+      const dismissed = localStorage.getItem("pwaFABDismissedAt");
+      const cooldownOk = !dismissed || Date.now() - Number(dismissed) > 86_400_000;
+
+      if (cooldownOk) {
+        const showFAB = () => {
+          setFabVisible(true);
+          // Clean up interaction listeners once FAB is shown
+          document.removeEventListener("scroll",     showFAB);
+          document.removeEventListener("touchstart", showFAB);
+          clearTimeout(timer);
+        };
+
+        // Show after 10 seconds OR on first scroll/touch — whichever comes first
+        const timer = setTimeout(showFAB, 10_000);
+        document.addEventListener("scroll",     showFAB, { once: true, passive: true });
+        document.addEventListener("touchstart", showFAB, { once: true, passive: true });
+      }
     }
 
     setMounted(true);
@@ -161,6 +180,26 @@ export default function ProfilePage() {
       // fail silently — keep current photo
     }
     e.target.value = ""; // allow re-selecting the same file
+  }
+
+  async function handleFABClick() {
+    if (installState === "ready") {
+      await installApp(); // triggers deferredPrompt.prompt() directly
+      // If accepted, hide FAB permanently
+      if (installState === "installed") {
+        localStorage.setItem("pwaInstalled", "1");
+        setFabVisible(false);
+      }
+    } else {
+      // No native prompt — show contextual fallback modal
+      setFallbackOpen(true);
+    }
+  }
+
+  function handleFABDismiss() {
+    setFallbackOpen(false);
+    setFabVisible(false);
+    localStorage.setItem("pwaFABDismissedAt", String(Date.now()));
   }
 
   function handleThemeToggle() {
@@ -337,8 +376,8 @@ export default function ProfilePage() {
         </section>
       )}
 
-      {/* Install App Card */}
-      {canInstall && (
+      {/* Install App Card — renders nothing when installed or idle */}
+      {!isInstalled && (
         <section className="px-4 mb-4">
           <InstallCard
             installState={installState}
@@ -562,8 +601,25 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      {/* ── Install Sheet ────────────────────────────────────────────────────── */}
-      {sheetOpen && canInstall && (
+      {/* ── Floating install button ──────────────────────────────────────────── */}
+      {fabVisible && !isInstalled && (
+        <InstallFAB
+          installing={installState === "prompting"}
+          onClick={handleFABClick}
+        />
+      )}
+
+      {/* ── FAB fallback modal (no native prompt) ────────────────────────────── */}
+      {fallbackOpen && !isInstalled && (
+        <InstallFallbackModal
+          platform={platform}
+          onDismiss={handleFABDismiss}
+          onClose={() => setFallbackOpen(false)}
+        />
+      )}
+
+      {/* ── Install Sheet (from card / auto-show) ────────────────────────────── */}
+      {sheetOpen && !isInstalled && (
         <InstallSheet
           installState={installState}
           platform={platform}
