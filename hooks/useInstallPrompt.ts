@@ -15,24 +15,32 @@ declare global {
   }
 }
 
-type Platform = "ios" | "android" | "desktop";
+export type InstallPlatform = "ios" | "android" | "desktop";
+
+export interface FallbackModal {
+  open: boolean;
+  platform: InstallPlatform;
+}
 
 export interface InstallPromptResult {
-  /** Show the install UI (not yet installed) */
+  /** True when not yet installed — show install UI */
   canInstall: boolean;
-  /** Currently in standalone / installed mode */
+  /** Running as installed standalone app */
   isInstalled: boolean;
-  /** Install flow in progress — disable button, show spinner */
+  /** Native prompt is actively being shown */
   installing: boolean;
-  /** iOS manual guide should be visible */
+  /** Show iOS inline guide inside the popup */
   showIOSGuide: boolean;
+  /** Fallback modal for Android/Desktop (no alert) */
+  fallbackModal: FallbackModal;
   dismissIOSGuide: () => void;
+  closeFallbackModal: () => void;
   triggerInstall: () => Promise<void>;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function detectPlatform(): Platform {
+function detectPlatform(): InstallPlatform {
   const ua = navigator.userAgent.toLowerCase();
   if (/iphone|ipad|ipod/.test(ua)) return "ios";
   if (/android/.test(ua)) return "android";
@@ -53,35 +61,39 @@ export function useInstallPrompt(): InstallPromptResult {
   const [isInstalled,    setIsInstalled]    = useState(false);
   const [installing,     setInstalling]     = useState(false);
   const [showIOSGuide,   setShowIOSGuide]   = useState(false);
+  const [fallbackModal,  setFallbackModal]  = useState<FallbackModal>({
+    open: false,
+    platform: "desktop",
+  });
 
   useEffect(() => {
-    // Check standalone immediately
+    // Detect installed state on mount
     setIsInstalled(isStandaloneMode());
 
-    // Pick up a prompt captured before this component mounted
+    // Pick up a prompt that was captured before React mounted
     if (window.deferredPrompt) {
       setDeferredPrompt(window.deferredPrompt);
     }
 
-    const onPrompt = (e: Event) => {
+    const onBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       const evt = e as BeforeInstallPromptEvent;
-      window.deferredPrompt = evt;
+      window.deferredPrompt = evt;     // persist globally for early capture
       setDeferredPrompt(evt);
     };
 
-    const onInstalled = () => {
+    const onAppInstalled = () => {
       setIsInstalled(true);
-      window.deferredPrompt = undefined;
       setDeferredPrompt(null);
+      window.deferredPrompt = undefined;
     };
 
-    window.addEventListener("beforeinstallprompt", onPrompt);
-    window.addEventListener("appinstalled", onInstalled);
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("appinstalled", onAppInstalled);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", onPrompt);
-      window.removeEventListener("appinstalled", onInstalled);
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onAppInstalled);
     };
   }, []);
 
@@ -91,7 +103,7 @@ export function useInstallPrompt(): InstallPromptResult {
 
     try {
       if (deferredPrompt) {
-        // ── Native browser install prompt (Android Chrome / Edge) ──────────────
+        // ── Real native PWA install prompt ────────────────────────────────────
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
@@ -102,41 +114,29 @@ export function useInstallPrompt(): InstallPromptResult {
         return;
       }
 
+      // ── beforeinstallprompt not available — use contextual modal ──────────
       const platform = detectPlatform();
 
       if (platform === "ios") {
-        // ── iOS Safari: show step-by-step guide inside popup ──────────────────
+        // Show step-by-step guide inside the popup (no extra modal needed)
         setShowIOSGuide(true);
-        return;
+      } else {
+        // Android without prompt OR desktop — show elegant fallback modal
+        setFallbackModal({ open: true, platform });
       }
-
-      if (platform === "android") {
-        // ── Android without native prompt → Play Store ────────────────────────
-        // TODO: Replace the URL below with your published Play Store link:
-        // window.open("https://play.google.com/store/apps/details?id=com.protocolo5", "_blank");
-        //
-        // Until the app is published, show manual instruction:
-        alert(
-          "Abra o Protocolo 5% no Chrome para Android,\ntoque no menu ⋮ e selecione 'Adicionar à tela inicial'."
-        );
-        return;
-      }
-
-      // ── Desktop (Chrome / Edge) ───────────────────────────────────────────
-      alert(
-        "Para instalar, abra este site no Chrome ou Edge e clique no ícone de instalação na barra de endereço."
-      );
     } finally {
       setInstalling(false);
     }
   }, [deferredPrompt, installing]);
 
   return {
-    canInstall:      !isInstalled,
+    canInstall:         !isInstalled,
     isInstalled,
     installing,
     showIOSGuide,
-    dismissIOSGuide: () => setShowIOSGuide(false),
+    fallbackModal,
+    dismissIOSGuide:    () => setShowIOSGuide(false),
+    closeFallbackModal: () => setFallbackModal((prev) => ({ ...prev, open: false })),
     triggerInstall,
   };
 }

@@ -24,8 +24,9 @@ import {
 import PremiumBanner from "@/components/premium/PremiumBanner";
 import PremiumModal  from "@/components/premium/PremiumModal";
 import PremiumCard   from "@/components/premium/PremiumCard";
-import InstallPopup  from "@/components/profile/InstallPopup";
-import InstallCard   from "@/components/profile/InstallCard";
+import InstallPopup         from "@/components/profile/InstallPopup";
+import InstallCard          from "@/components/profile/InstallCard";
+import InstallFallbackModal from "@/components/profile/InstallFallbackModal";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 
 // ── Theme helpers (plain localStorage — NOT JSON-encoded, to match init script) ─
@@ -94,7 +95,15 @@ export default function ProfilePage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Install prompt
-  const { canInstall, installing, showIOSGuide, dismissIOSGuide, triggerInstall } = useInstallPrompt();
+  const {
+    canInstall,
+    installing,
+    showIOSGuide,
+    fallbackModal,
+    dismissIOSGuide,
+    closeFallbackModal,
+    triggerInstall,
+  } = useInstallPrompt();
   const [showInstallPopup, setShowInstallPopup] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -559,6 +568,13 @@ export default function ProfilePage() {
           showIOSGuide={showIOSGuide}
           onInstall={triggerInstall}
           onClose={() => { setShowInstallPopup(false); dismissIOSGuide(); }}
+        />
+      )}
+
+      {fallbackModal.open && (
+        <InstallFallbackModal
+          platform={fallbackModal.platform}
+          onClose={closeFallbackModal}
         />
       )}
 
