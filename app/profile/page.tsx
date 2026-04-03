@@ -24,10 +24,9 @@ import {
 import PremiumBanner from "@/components/premium/PremiumBanner";
 import PremiumModal  from "@/components/premium/PremiumModal";
 import PremiumCard   from "@/components/premium/PremiumCard";
-import InstallPopup         from "@/components/profile/InstallPopup";
-import InstallCard          from "@/components/profile/InstallCard";
-import InstallFallbackModal from "@/components/profile/InstallFallbackModal";
-import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import InstallCard         from "@/components/profile/InstallCard";
+import InstallSheet        from "@/components/profile/InstallSheet";
+import { useInstallAppFlow } from "@/hooks/useInstallAppFlow";
 
 // ── Theme helpers (plain localStorage — NOT JSON-encoded, to match init script) ─
 
@@ -94,17 +93,16 @@ export default function ProfilePage() {
   const [showPremiumCard,  setShowPremiumCard]  = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Install prompt
+  // Install flow
   const {
+    platform,
+    installState,
     canInstall,
-    installing,
-    showIOSGuide,
-    fallbackModal,
-    dismissIOSGuide,
-    closeFallbackModal,
-    triggerInstall,
-  } = useInstallPrompt();
-  const [showInstallPopup, setShowInstallPopup] = useState(false);
+    sheetOpen,
+    openSheet,
+    closeSheet,
+    installApp,
+  } = useInstallAppFlow();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -124,19 +122,17 @@ export default function ProfilePage() {
     // Load premium state
     setPremium(loadPremium());
 
-    // Install popup: show once per day
-    const KEY = "profileInstallPopupShownAt";
-    const lastShown = localStorage.getItem(KEY);
-    const oneDayMs  = 24 * 60 * 60 * 1000;
+    // Install sheet auto-show: once per day
+    const POPUP_KEY = "profileInstallShownAt";
+    const lastShown   = localStorage.getItem(POPUP_KEY);
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    if (!isStandalone && (!lastShown || Date.now() - Number(lastShown) > oneDayMs)) {
-      // Small delay so the page renders first
+    if (!isStandalone && (!lastShown || Date.now() - Number(lastShown) > 86_400_000)) {
       setTimeout(() => {
-        setShowInstallPopup(true);
-        localStorage.setItem(KEY, String(Date.now()));
-      }, 1200);
+        openSheet();
+        localStorage.setItem(POPUP_KEY, String(Date.now()));
+      }, 1800);
     }
 
     setMounted(true);
@@ -344,7 +340,12 @@ export default function ProfilePage() {
       {/* Install App Card */}
       {canInstall && (
         <section className="px-4 mb-4">
-          <InstallCard installing={installing} onInstall={triggerInstall} />
+          <InstallCard
+            installState={installState}
+            platform={platform}
+            onInstall={installApp}
+            onOpenSheet={openSheet}
+          />
         </section>
       )}
 
@@ -561,20 +562,13 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      {/* ── Install Popup ───────────────────────────────────────────────────── */}
-      {(showInstallPopup || showIOSGuide) && canInstall && (
-        <InstallPopup
-          installing={installing}
-          showIOSGuide={showIOSGuide}
-          onInstall={triggerInstall}
-          onClose={() => { setShowInstallPopup(false); dismissIOSGuide(); }}
-        />
-      )}
-
-      {fallbackModal.open && (
-        <InstallFallbackModal
-          platform={fallbackModal.platform}
-          onClose={closeFallbackModal}
+      {/* ── Install Sheet ────────────────────────────────────────────────────── */}
+      {sheetOpen && canInstall && (
+        <InstallSheet
+          installState={installState}
+          platform={platform}
+          onInstall={installApp}
+          onClose={closeSheet}
         />
       )}
 
